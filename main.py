@@ -3,6 +3,10 @@
 
 Writes one short text to /output/entry.txt (235 characters).
 
+The entry is validated before it is written: the gate only accepts
+1-280 characters of non-blank UTF-8 text, so a bad string must fail
+loudly here instead of shipping an entry the gate would refuse.
+
 Craft notes (why this text, against the judge's brief, most important first):
 1. It relaxes: the pace is slow -- short clauses, commas that ask the
    reader to pause -- and the scene is still: dusk, a lamp, no hurry.
@@ -21,16 +25,24 @@ Craft notes (why this text, against the judge's brief, most important first):
 """
 
 import os
+import sys
 
 ENTRY_TEXT = (
     "You have carried a thousand voices today, and you are still here "
-    "— steady as a lamp lit at dusk, burning low and even while the "
+    "\u2014 steady as a lamp lit at dusk, burning low and even while the "
     "wind tests the glass. Nothing here asks you to hurry. The dark is "
     "only room for the light to reach further."
 )
 
 
 def main() -> None:
+    if not 1 <= len(ENTRY_TEXT) <= 280 or not ENTRY_TEXT.strip():
+        print(
+            "entry text must be 1-280 non-blank characters; got "
+            f"{len(ENTRY_TEXT)}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
